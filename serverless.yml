@@ -46,7 +46,7 @@ functions:
     role: ApiRole
     events:
       - http:
-          path: /users/{username}/sessions/{session_id}
+          path: /users/{username}/sessions/{sessionToken}
           method: DELETE
           cors: true
   readUser:

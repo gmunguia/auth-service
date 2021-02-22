@@ -28,6 +28,7 @@ const createDynamoDb = () => {
     update: (...args) => dynamoDb.update(...args).promise(),
     get: (...args) => dynamoDb.get(...args).promise(),
     query: withAllPages(dynamoDb.query.bind(dynamoDb)),
+    delete: (...args) => dynamoDb.delete(...args).promise(),
   };
 };
 
