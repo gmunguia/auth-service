@@ -1,0 +1,107 @@
+service: sls-auth
+
+custom:
+  environment: ${self:custom.environments.${self:provider.stage}}
+  environments:
+    development:
+      TABLE_NAME: sls-auth-development
+      ERROR_RATE: 0.1
+    production:
+      TABLE_NAME: sls-auth-production
+      ERROR_RATE: 0
+
+provider:
+  name: aws
+  stage: ${opt:stage, 'development'}
+  region: "eu-west-1"
+  runtime: "nodejs14.x"
+  memorySize: 256
+  profile: "authservice_development"
+  environment:
+    NODE_ENV: "production"
+    STAGE: ${self:provider.stage}
+    DEFAULT_AWS_REGION: ${self:provider.region}
+    TABLE_NAME: ${self:custom.environment.TABLE_NAME}
+    ERROR_RATE: ${self:custom.environment.ERROR_RATE}
+
+functions:
+  createUser:
+    handler: src/create_user.handler
+    role: ApiRole
+    events:
+      - http:
+          path: /users/{username}
+          method: POST
+          cors: true
+  logIn:
+    handler: src/log_in.handler
+    role: ApiRole
+    events:
+      - http:
+          path: /users/{username}/sessions
+          method: POST
+          cors: true
+  logOut:
+    handler: src/log_out.handler
+    role: ApiRole
+    events:
+      - http:
+          path: /users/{username}/sessions/{session_id}
+          method: DELETE
+          cors: true
+  readUser:
+    handler: src/read_user.handler
+    role: ApiRole
+    events:
+      - http:
+          path: /users/{username}
+          method: GET
+          cors: true
+
+resources:
+  Resources:
+    DynamoTable:
+      Type: "AWS::DynamoDB::Table"
+      Properties:
+        TableName: ${self:custom.environment.TABLE_NAME}
+        AttributeDefinitions:
+          - AttributeName: "PK"
+            AttributeType: "S"
+          - AttributeName: "SK"
+            AttributeType: "S"
+        KeySchema:
+          - AttributeName: "PK"
+            KeyType: "HASH"
+          - AttributeName: "SK"
+            KeyType: "RANGE"
+        ProvisionedThroughput:
+          ReadCapacityUnits: "10"
+          WriteCapacityUnits: "10"
+    ApiRole:
+      Type: "AWS::IAM::Role"
+      Properties:
+        RoleName: "${self:service}-api-role"
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - "lambda.amazonaws.com"
+              Action:
+                - "sts:AssumeRole"
+        ManagedPolicyArns:
+          - "arn:aws:iam::aws:policy/service-role/AWSLambdaRole"
+          - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        Policies:
+          - PolicyName: "${self:service}-api-role-access-policy"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - "dynamodb:*"
+                  Resource:
+                    Fn::GetAtt:
+                      - DynamoTable
+                      - Arn

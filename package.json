@@ -1,0 +1,33 @@
+{
+  "name": "auth-service",
+  "private": true,
+  "version": "1.0.0",
+  "author": "Gerardo Munguia",
+  "license": "MIT",
+  "scripts": {
+    "post-deploy": "AWS_PROFILE=authservice_deployment AWS_REGION=eu-west-1 node bin/set_throttle.js",
+    "deploy": "yarn sls deploy && yarn post-deploy"
+  },
+  "dependencies": {
+    "ajv": "^7.1.0",
+    "aws-sdk": "^2.843.0",
+    "ramda": "^0.27.1",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "eslint": "^7.20.0",
+    "husky": "^5.0.9",
+    "lint-staged": "^10.5.4",
+    "prettier": "^2.2.1",
+    "serverless": "^2.23.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": "eslint --cache --fix",
+    "*.{js,md,yml}": "prettier --write"
+  }
+}
