@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const { default: Ajv } = require("ajv");
 const { createDynamoDb: _createDynamoDb } = require("./lib/dynamodb.js");
 const { chaos } = require("./lib/chaos.js");
-const { BadRequest } = require("./lib/errors.js");
+const { BadRequest, Conflict } = require("./lib/errors.js");
 
 const validate = (schema, value) => {
   const ajv = new Ajv();
@@ -74,11 +74,17 @@ const createHandler = (
       createdAt: requestTime.toISOString(),
     };
 
-    // TODO throw 409 if user already exists.
-    await db.put({
-      TableName: tableName,
-      Item: item,
-    });
+    try {
+      await db.put({
+        TableName: tableName,
+        Item: item,
+        ConditionExpression: "attribute_not_exists(PK)",
+      });
+    } catch (error) {
+      throw error.code === "ConditionalCheckFailedException"
+        ? new Conflict("User already exists")
+        : error;
+    }
   };
 
   const handleEvent = async (event) => {

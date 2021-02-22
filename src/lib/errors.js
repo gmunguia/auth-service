@@ -39,9 +39,18 @@ class Forbidden extends HttpError {
   }
 }
 
+class Conflict extends HttpError {
+  constructor(publicDetails) {
+    super("Conflict");
+    this.code = 409;
+    this.publicDetails = publicDetails;
+  }
+}
+
 module.exports.HttpError = HttpError;
 module.exports.BadRequest = BadRequest;
 module.exports.NotFound = NotFound;
 module.exports.Unauthorized = Unauthorized;
 module.exports.Forbidden = Forbidden;
+module.exports.Conflict = Conflict;
 module.exports.Chaos = Chaos;
