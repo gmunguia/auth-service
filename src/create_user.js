@@ -1,4 +1,5 @@
 const { inspect } = require("util");
+const bcrypt = require("bcryptjs");
 const { default: Ajv } = require("ajv");
 const { createDynamoDb: _createDynamoDb } = require("./lib/dynamodb.js");
 const { chaos } = require("./lib/chaos.js");
@@ -85,8 +86,9 @@ const createHandler = (
       chaos();
 
       const { username, firstName, password, requestTime } = parseEvent(event);
-      // TODO hash password here and in log in.
-      await writeUser({ username, firstName, password, requestTime });
+      const saltRounds = 10;
+      const hash = await bcrypt.hash(password, saltRounds);
+      await writeUser({ username, firstName, password: hash, requestTime });
 
       return {
         statusCode: 201,

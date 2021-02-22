@@ -1,4 +1,5 @@
 const { inspect } = require("util");
+const bcrypt = require("bcryptjs");
 const { default: Ajv } = require("ajv");
 const { v4: uuid } = require("uuid");
 const { createDynamoDb: _createDynamoDb } = require("./lib/dynamodb.js");
@@ -71,7 +72,7 @@ const createHandler = (
       },
     });
 
-    if (item.password !== password) return;
+    if (!(await bcrypt.compare(password, item.password))) return;
 
     return item;
   };
