@@ -5,7 +5,7 @@
   "author": "Gerardo Munguia",
   "license": "MIT",
   "scripts": {
-    "post-deploy": "AWS_PROFILE=authservice_deployment AWS_REGION=eu-west-1 node bin/set_throttle.js",
+    "post-deploy": "AWS_PROFILE=authservice_development AWS_REGION=eu-west-1 node bin/set_throttle.js",
     "deploy": "yarn sls deploy && yarn post-deploy"
   },
   "dependencies": {
