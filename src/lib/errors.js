@@ -1,7 +1,9 @@
 class Chaos extends Error {
   constructor() {
     super("Artificial error");
-    this.publicDetails = "👹👹👹";
+    const numberOfOgres = Math.floor(Math.random() * 10) + 1;
+    const stringOfOgres = Array.from(Array(numberOfOgres), () => "👹").join("");
+    this.publicDetails = stringOfOgres;
   }
 }
 
