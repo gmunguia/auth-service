@@ -2,7 +2,7 @@ const aws = require("aws-sdk");
 
 (async () => {
   // TODO Extract from cloudformation outputs.
-  const API_NAME = "development-auth";
+  const API_NAME = "development-sls-auth";
   const STAGE_NAME = "development";
 
   var apigateway = new aws.APIGateway();
