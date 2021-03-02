@@ -123,4 +123,5 @@ const createHandler = (
   return handleEvent;
 };
 
+
 module.exports.handler = withCors(withErrorResponse(createHandler()));
