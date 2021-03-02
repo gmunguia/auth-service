@@ -1,4 +1,3 @@
-const { inspect } = require("util");
 const { default: Ajv } = require("ajv");
 const { compose, fromPairs, toPairs, map } = require("ramda");
 const { createDynamoDb: _createDynamoDb } = require("./lib/dynamodb.js");
@@ -9,6 +8,8 @@ const {
   Forbidden,
   Unauthorized,
 } = require("./lib/errors.js");
+const { withCors } = require("./lib/withCors.js");
+const { withErrorResponse } = require("./lib/withErrorResponse.js");
 
 const validate = (schema, value) => {
   const ajv = new Ajv();
@@ -95,50 +96,36 @@ const createHandler = (
   };
 
   const handleEvent = async (event) => {
-    try {
-      chaos();
+    chaos();
 
-      const { currentSessionToken, targetSessionToken, username } = parseEvent(
-        event
-      );
-      const currentSession = await findSession({
-        sessionToken: currentSessionToken,
-      });
-      if (currentSession == null) {
-        throw new Unauthorized("You need to set a valid Authorization header");
-      }
-      if (currentSession.username !== username) {
-        throw new Forbidden("You cannot access the requested resource");
-      }
-
-      const targetSession = await findSession({
-        sessionToken: targetSessionToken,
-      });
-      if (targetSession == null || targetSession.username !== username) {
-        throw new NotFound("Cannot find session to delete");
-      }
-
-      await deleteSession({ sessionToken: targetSessionToken });
-
-      return {
-        statusCode: 204,
-      };
-    } catch (error) {
-      console.error(inspect(event, { depth: 3 }));
-      console.error(error);
-      return {
-        statusCode: error.code || 500,
-        body: JSON.stringify({
-          details: error.publicDetails || "Unkown error",
-        }),
-        headers: {
-          "content-type": "application/json",
-        },
-      };
+    const { currentSessionToken, targetSessionToken, username } = parseEvent(
+      event
+    );
+    const currentSession = await findSession({
+      sessionToken: currentSessionToken,
+    });
+    if (currentSession == null) {
+      throw new Unauthorized("You need to set a valid Authorization header");
     }
+    if (currentSession.username !== username) {
+      throw new Forbidden("You cannot access the requested resource");
+    }
+
+    const targetSession = await findSession({
+      sessionToken: targetSessionToken,
+    });
+    if (targetSession == null || targetSession.username !== username) {
+      throw new NotFound("Cannot find session to delete");
+    }
+
+    await deleteSession({ sessionToken: targetSessionToken });
+
+    return {
+      statusCode: 204,
+    };
   };
 
   return handleEvent;
 };
 
-module.exports.handler = createHandler();
+module.exports.handler = withCors(withErrorResponse(createHandler()));

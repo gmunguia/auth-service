@@ -9,6 +9,8 @@ const {
   Unauthorized,
   Forbidden,
 } = require("./lib/errors.js");
+const { withCors } = require("./lib/withCors.js");
+const { withErrorResponse } = require("./lib/withErrorResponse.js");
 
 const validate = (schema, value) => {
   const ajv = new Ajv();
@@ -137,4 +139,4 @@ const createHandler = (
   return handleEvent;
 };
 
-module.exports.handler = createHandler();
+module.exports.handler = withCors(withErrorResponse(createHandler()));

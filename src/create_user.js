@@ -1,9 +1,10 @@
-const { inspect } = require("util");
 const bcrypt = require("bcryptjs");
 const { default: Ajv } = require("ajv");
 const { createDynamoDb: _createDynamoDb } = require("./lib/dynamodb.js");
 const { chaos } = require("./lib/chaos.js");
 const { BadRequest, Conflict } = require("./lib/errors.js");
+const { withCors } = require("./lib/withCors.js");
+const { withErrorResponse } = require("./lib/withErrorResponse.js");
 
 const validate = (schema, value) => {
   const ajv = new Ajv();
@@ -88,37 +89,26 @@ const createHandler = (
   };
 
   const handleEvent = async (event) => {
-    try {
-      chaos();
+    chaos();
 
-      const { username, firstName, password, requestTime } = parseEvent(event);
-      const saltRounds = 10;
-      const hash = await bcrypt.hash(password, saltRounds);
-      await writeUser({ username, firstName, password: hash, requestTime });
+    const { username, firstName, password, requestTime } = parseEvent(event);
+    const saltRounds = 10;
+    const hash = await bcrypt.hash(password, saltRounds);
+    await writeUser({ username, firstName, password: hash, requestTime });
 
-      return {
-        statusCode: 201,
-        body: JSON.stringify({
-          username,
-          firstName,
-        }),
-        headers: {
-          "content-type": "application/json",
-        },
-      };
-    } catch (error) {
-      console.error(inspect(event, { depth: 3 }));
-      console.error(error);
-      return {
-        statusCode: error.code || 500,
-        body: JSON.stringify({
-          details: error.publicDetails || "Unkown error",
-        }),
-      };
-    }
+    return {
+      statusCode: 201,
+      body: JSON.stringify({
+        username,
+        firstName,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
   };
 
   return handleEvent;
 };
 
-module.exports.handler = createHandler();
+module.exports.handler = withCors(withErrorResponse(createHandler()));
