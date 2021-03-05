@@ -19,7 +19,7 @@ const aws = require("aws-sdk");
         {
           op: "replace",
           path: "/*/*/throttling/burstLimit",
-          value: "2",
+          value: "5",
         },
         {
           op: "replace",
