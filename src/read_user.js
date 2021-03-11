@@ -31,11 +31,16 @@ const createHandler = (
       type: "object",
       properties: {
         pathParameters: {
-          type: "object",
-          properties: {
-            username: { type: "string" },
-          },
-          required: ["username"],
+          oneOf: [
+            { type: "null" },
+            {
+              type: "object",
+              properties: {
+                username: { type: "string" },
+              },
+              required: [],
+            },
+          ],
         },
         headers: {
           type: "object",
@@ -60,7 +65,7 @@ const createHandler = (
     );
 
     return {
-      username: pathParameters.username,
+      username: pathParameters && pathParameters.username,
       sessionToken: normaliseHeaders(headers).authorization,
       requestTime: new Date(requestContext.requestTimeEpoch),
     };
@@ -105,18 +110,21 @@ const createHandler = (
         throw new Unauthorized("A valid Authorization header must be provided");
         // TODO WWW-Authenticate token. see https://tools.ietf.org/html/rfc6749#section-5.2
       }
-      if (session.username !== username) {
+      if (username != null && session.username !== username) {
         throw new Forbidden("You cannot access the requested resource");
       }
 
-      const user = await findUser({ username });
+      const user = await findUser({ username: session.username });
       if (user == null) {
         throw new NotFound("User not found");
       }
 
       return {
         statusCode: 200,
-        body: JSON.stringify({ username, firstName: user.firstName }),
+        body: JSON.stringify({
+          username: session.username,
+          firstName: user.firstName,
+        }),
         headers: {
           "content-type": "application/json",
         },

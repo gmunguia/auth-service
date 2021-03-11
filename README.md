@@ -49,24 +49,24 @@ Invalidate a session token.
 
 #### Example
 
-How to invalidate `johndoe`'s session with id `12tndiu2t3hudicau`.
+How to invalidate session with id `12tndiu2t3hudicau`.
 
 ```
-DELETE /users/johndoe/sessions/12tndiu2t3hudicau HTTP/1.1
+DELETE /sessions/12tndiu2t3hudicau HTTP/1.1
 [...]
 Authorization: 12tndiu2t3hudicau
 ```
 
-### Read user attributes
+### Read current user attributes
 
-Retrieve user attributes.
+Retrieve current user attributes.
 
 #### Example
 
-How to retrieve `johndoe`'s attributes. `12tndiu2t3hudicau` is a valid session token obtained through log in.
+How to retrieve attributes of currently logged in user. `12tndiu2t3hudicau` is a valid session token obtained through log in.
 
 ```
-GET /users/johndoe HTTP/1.1
+GET /user HTTP/1.1
 [...]
 Authorization: 12tndiu2t3hudicau
 ```

@@ -35,7 +35,7 @@ const createHandler = (
             username: { type: "string" },
             sessionToken: { type: "string" },
           },
-          required: ["username", "sessionToken"],
+          required: ["sessionToken"],
         },
         headers: {
           type: "object",
@@ -107,14 +107,17 @@ const createHandler = (
     if (currentSession == null) {
       throw new Unauthorized("You need to set a valid Authorization header");
     }
-    if (currentSession.username !== username) {
+    if (username != null && currentSession.username !== username) {
       throw new Forbidden("You cannot access the requested resource");
     }
 
     const targetSession = await findSession({
       sessionToken: targetSessionToken,
     });
-    if (targetSession == null || targetSession.username !== username) {
+    if (
+      targetSession == null ||
+      (username != null && targetSession.username !== username)
+    ) {
       throw new NotFound("Cannot find session to delete");
     }
 

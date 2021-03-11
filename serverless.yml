@@ -49,12 +49,20 @@ functions:
           path: /users/{username}/sessions/{sessionToken}
           method: DELETE
           cors: true
+      - http:
+          path: /sessions/{sessionToken}
+          method: DELETE
+          cors: true
   readUser:
     handler: src/read_user.handler
     role: ApiRole
     events:
       - http:
           path: /users/{username}
+          method: GET
+          cors: true
+      - http:
+          path: /user
           method: GET
           cors: true
 
