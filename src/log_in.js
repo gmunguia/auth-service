@@ -73,6 +73,7 @@ const createHandler = (
       },
     });
 
+    if (item == null) return;
     if (!(await bcrypt.compare(password, item.password))) return;
 
     return item;
@@ -122,6 +123,5 @@ const createHandler = (
 
   return handleEvent;
 };
-
 
 module.exports.handler = withCors(withErrorResponse(createHandler()));
